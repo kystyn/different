@@ -1,3 +1,5 @@
+import numpy as np
+
 class Criteria:
     def __init__(self, _num, _left, _right):
         self.columnNum = _num
@@ -5,11 +7,14 @@ class Criteria:
         self.right = _right
 
 
-def readArray(fileName):
+def readArray(fileName, splitter):
     res = [[]]
     f = open(fileName, 'rt')
     for s in f:
-        res.append([float(n) for n in s.split(',')])
+        try:
+            res.append([float(n) for n in s.split(splitter)])
+        except:
+            res.pop()
     f.close()
     return res
 
@@ -44,12 +49,17 @@ def readCriteries():
     print('Ввод критериев завершён!')
     return criteries
 
+
 def writeToFile( fileName, array ):
     f = open(fileName, 'w')
 
     for s in array:
         for st in s:
-            f.write(str(st) + ' ')
+            stst = str(st)
+            if '.' in stst:
+                f.write(stst[:stst.index('.') + 7] + ' ')
+            else:
+                f.write(stst + ' ')
         f.write('\n')
 
     f.close()
@@ -68,10 +78,33 @@ def makeDistribution( array, column, step ):
             curCount += 1
             arrIdx += 1
         else:
-            distr.append([curVal, curCount])
+            distr.append((curVal, curCount))
             curVal += step
             curCount = 0
-    distr.append([curVal, curCount])
+    distr.append((curVal, curCount))
+    return distr
+
+
+def evalDistrSum( array, column, step ):
+    array.sort(key=lambda row: row[column])
+    distr = []
+    curCount = 0
+    curVal = array[0][column]
+    curEnergy = 0
+
+    arrIdx = 0
+
+    while arrIdx < len(array):
+        if curVal <= array[arrIdx][column] < curVal + step:
+            curEnergy += array[arrIdx][2]
+            curCount += 1
+            arrIdx += 1
+        else:
+            distr.append((curVal, curCount, curEnergy, curEnergy / curCount))
+            curVal += step
+            curCount = 0
+            curEnergy = 0
+    distr.append((curVal, curCount, curEnergy, curEnergy / curCount))
     return distr
 
 
@@ -87,10 +120,10 @@ def readDistrInput(arr):
         writeToFile(input(), makeDistribution(arr, column, step))
 
 
-def main():
+def distr():
     print('Введите имя входного файла:', end=' ')
     fileName = input()
-    arr = readArray(fileName)
+    arr = readArray(fileName, ',')
 
     criteries = readCriteries()
 
@@ -100,4 +133,16 @@ def main():
 
     readDistrInput(arr)
 
-main()
+
+def energySum():
+    print('Введите имя входного файла:', end=' ')
+    fileName = input()
+    arr = readArray(fileName, '\t')
+
+    print('Введите шаг:', end=' ')
+    arr = evalDistrSum(arr, 1, float(input()))
+
+    print('Введите имя выходного файла для селекции:', end=' ')
+    writeToFile(input(), arr)
+
+energySum()
