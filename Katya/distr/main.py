@@ -45,15 +45,17 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
             # need normalize
             nrm = 0
+            maxx = x[np.argmax(y)]
             miny = np.min(y)
             y -= miny
+            x -= maxx
             for i in range(1, len(y)):
                 nrm += (y[i] + y[i - 1]) * (x[i] - x[i - 1]) / 2
 
             gaussian = research.approxGauss(x, y / nrm)
 
             x = np.linspace(data[0].val, data[-1].val, 100)
-            plt.plot(x, [gaussian(z) * nrm + miny for z in x], color='red')
+            plt.plot(x, [gaussian(z - maxx) * nrm + miny for z in x], color='red')
 
 
             plt.xlabel('Координата')
