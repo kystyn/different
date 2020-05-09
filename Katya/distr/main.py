@@ -1,148 +1,63 @@
+import sys
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QFileDialog
+from math import *
+import matplotlib.pyplot as plt
 import numpy as np
+import design.design as design
+import research
 
-class Criteria:
-    def __init__(self, _num, _left, _right):
-        self.columnNum = _num
-        self.left = _left
-        self.right = _right
+class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+        self.setupSlots()
 
+    def setupOpenFileAction(self):
+        def slot(flag: bool):
+            self.inputFileName = QFileDialog.getOpenFileName(self, 'Открыть файл', 'data', 'TXT files ( *.txt)')[0]
 
-def readArray(fileName, splitter):
-    res = [[]]
-    f = open(fileName, 'rt')
-    for s in f:
-        try:
-            res.append([float(n) for n in s.split(splitter)])
-        except:
-            res.pop()
-    f.close()
-    return res
+        self.actionOpen.triggered.connect(slot)
 
+    def setupSaveAsFileAction(self):
+        def slot(flag: bool):
+            writeFileName = QFileDialog.getSaveFileName(self, 'Сохранить как', 'data', 'TXT files ( *.txt)')[0]
+            research.writeToFile(writeFileName, self.dataToWrite)
 
-def select(array, criteries):
-    i = 0
-    while i < len(array):
-        broken = False
-        for criteria in criteries:
-            if criteria.columnNum > len(array[i]) - 1:
-                array.remove(array[i])
-                broken = True
-                break
-            if array[i][criteria.columnNum] < criteria.left or \
-                    array[i][criteria.columnNum] > criteria.right:
-                array.remove(array[i])
-                broken = True
-                break
-        if not broken:
-            i = i + 1
-    return array
+        self.actionSave.triggered.connect(slot)
 
+    def setupBuildButton(self):
+        def slot():
+            arr = research.readArray(self.inputFileName, '\t')
+            self.dataToWrite = research.evalDistrSum(arr, 1, float(self.distrStep.text()))
+        self.buildButton.released.connect(slot)
 
-def readCriteries():
-    criteries = []
-    while True:
-        print('Введите номер столбца, нижний и верхние пределы для отбора или нажмите enter для завершения:', end=' ')
-        s = input().split()
-        if len(s) == 0:
-            break
-        criteries.append(Criteria(int(s[0]) - 1, float(s[1]), float(s[2])))
-    print('Ввод критериев завершён!')
-    return criteries
+    def setupSlots(self):
+        self.setupOpenFileAction()
+        self.setupSaveAsFileAction()
+        self.setupBuildButton()
 
+    def _fib_chart(self):
+        print('Fib chart clicked')
 
-def writeToFile( fileName, array ):
-    f = open(fileName, 'w')
+        func_str = self.fibFunction.text()
+        left_bound = eval(self.fibLeft.text())
+        right_bound = eval(self.fibRight.text())
+        xs = np.linspace(left_bound, right_bound, 100)
+        ys = np.array([eval(func_str) for x in list(xs)])
 
-    for s in array:
-        for st in s:
-            stst = str(st)
-            if '.' in stst:
-                f.write(stst[:stst.index('.') + 7] + ' ')
-            else:
-                f.write(stst + ' ')
-        f.write('\n')
+        fig, ax = plt.subplots()
+        ax.plot(xs, ys, color='blue', label='f(x)')
+        ax.set_xlabel('x')
+        ax.set_ylabel('y')
+        plt.show()
 
-    f.close()
+def main():
+    app = QtWidgets.QApplication(sys.argv)
+    window = MyApp()
+    window.show()
+    app.exec_()
 
 
-def makeDistribution( array, column, step ):
-    array.sort(key=lambda row: row[column])
-    distr = []
-    curCount = 0
-    curVal = array[0][column]
-
-    arrIdx = 0
-
-    while arrIdx < len(array):
-        if curVal <= array[arrIdx][column] < curVal + step:
-            curCount += 1
-            arrIdx += 1
-        else:
-            distr.append((curVal, curCount))
-            curVal += step
-            curCount = 0
-    distr.append((curVal, curCount))
-    return distr
-
-
-def evalDistrSum( array, column, step ):
-    array.sort(key=lambda row: row[column])
-    distr = []
-    curCount = 0
-    curVal = array[0][column]
-    curEnergy = 0
-
-    arrIdx = 0
-
-    while arrIdx < len(array):
-        if curVal <= array[arrIdx][column] < curVal + step:
-            curEnergy += array[arrIdx][2]
-            curCount += 1
-            arrIdx += 1
-        else:
-            distr.append((curVal, curCount, curEnergy, curEnergy / curCount))
-            curVal += step
-            curCount = 0
-            curEnergy = 0
-    distr.append((curVal, curCount, curEnergy, curEnergy / curCount))
-    return distr
-
-
-def readDistrInput(arr):
-    while True:
-        print('Введите номер столбца, по которому требуется построить распределение, и шаг, либо enter для завершения:', end=' ')
-        s = input().split()
-        if len(s) == 0:
-            break
-        column = int(s[0]) - 1
-        step = float(s[1])
-        print('Введите имя выходного файла для распределения:', end=' ')
-        writeToFile(input(), makeDistribution(arr, column, step))
-
-
-def distr():
-    print('Введите имя входного файла:', end=' ')
-    fileName = input()
-    arr = readArray(fileName, ',')
-
-    criteries = readCriteries()
-
-    arr = select(arr, criteries)
-    print('Введите имя выходного файла для селекции:', end=' ')
-    writeToFile(input(), arr)
-
-    readDistrInput(arr)
-
-
-def energySum():
-    print('Введите имя входного файла:', end=' ')
-    fileName = input()
-    arr = readArray(fileName, '\t')
-
-    print('Введите шаг:', end=' ')
-    arr = evalDistrSum(arr, 1, float(input()))
-
-    print('Введите имя выходного файла для селекции:', end=' ')
-    writeToFile(input(), arr)
-
-energySum()
+if __name__ == '__main__':
+    main()
