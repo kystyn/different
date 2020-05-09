@@ -6,30 +6,60 @@ import matplotlib.pyplot as plt
 import numpy as np
 import design.design as design
 import research
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.distrSaved.setVisible(False)
         self.setupSlots()
 
     def setupOpenFileAction(self):
         def slot(flag: bool):
             self.inputFileName = QFileDialog.getOpenFileName(self, 'Открыть файл', 'data', 'TXT files ( *.txt)')[0]
+            self.loadedFileTxt.setText("Загружен файл: " + self.inputFileName)
+            self.distrSaved.setVisible(False)
 
         self.actionOpen.triggered.connect(slot)
 
     def setupSaveAsFileAction(self):
         def slot(flag: bool):
             writeFileName = QFileDialog.getSaveFileName(self, 'Сохранить как', 'data', 'TXT files ( *.txt)')[0]
-            research.writeToFile(writeFileName, self.dataToWrite)
+            for startElem, data in self.dataToWrite:
+                research.writeToFile(writeFileName + '_' + str(startElem) + '.txt', data)
+
+            self.distrSaved.setVisible(True)
 
         self.actionSave.triggered.connect(slot)
 
+    def buildHistogram(self):
+        for startElem, data in self.dataToWrite:
+            plt.figure()
+            plt.plot([datum[0] for datum in data],
+                     [datum[1] for datum in data])
+            plt.xlabel('Координата')
+            plt.ylabel('Энергия')
+            plt.show()
+            plt.savefig('data/' + str(startElem) + '.png', dpi=600)
+            plt.title('Начальное событие: ' + str(startElem))
+
     def setupBuildButton(self):
         def slot():
-            arr = research.readArray(self.inputFileName, '\t')
-            self.dataToWrite = research.evalDistrSum(arr, 1, float(self.distrStep.text()))
+            self.rawData = research.readArray(self.inputFileName, '\t')
+            self.dataToWrite = []
+
+            sampleSize = int(self.sampleSize.text())
+            windowStep = int(self.windowStep.text())
+
+            for startElem in range(0, len(self.rawData), windowStep):
+                self.dataToWrite.append\
+                    ((startElem, research.evalDistrSum(self.rawData[startElem: max(startElem + sampleSize, len(self.rawData))],
+                                           1, float(self.distrStep.text()))))
+
+            self.buildHistogram()
+
         self.buildButton.released.connect(slot)
 
     def setupSlots(self):
@@ -37,20 +67,6 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.setupSaveAsFileAction()
         self.setupBuildButton()
 
-    def _fib_chart(self):
-        print('Fib chart clicked')
-
-        func_str = self.fibFunction.text()
-        left_bound = eval(self.fibLeft.text())
-        right_bound = eval(self.fibRight.text())
-        xs = np.linspace(left_bound, right_bound, 100)
-        ys = np.array([eval(func_str) for x in list(xs)])
-
-        fig, ax = plt.subplots()
-        ax.plot(xs, ys, color='blue', label='f(x)')
-        ax.set_xlabel('x')
-        ax.set_ylabel('y')
-        plt.show()
 
 def main():
     app = QtWidgets.QApplication(sys.argv)

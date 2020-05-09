@@ -1,5 +1,3 @@
-import numpy as np
-
 class Criteria:
     def __init__(self, _num, _left, _right):
         self.columnNum = _num
@@ -14,7 +12,8 @@ def readArray(fileName, splitter):
         try:
             res.append([float(n) for n in s.split(splitter)])
         except:
-            res.pop()
+            if len(res) > 0:
+                res.pop()
     f.close()
     return res
 
@@ -50,7 +49,7 @@ def readCriteries():
     return criteries
 
 
-def writeToFile( fileName, array ):
+def writeToFile(fileName, array):
     f = open(fileName, 'w')
 
     for s in array:
@@ -85,8 +84,8 @@ def makeDistribution( array, column, step ):
     return distr
 
 
-def evalDistrSum( array, column, step ):
-    array.sort(key=lambda row: row[column])
+def evalDistrSum(array, column, step):
+    array.sort(key = lambda row: row[column])
     distr = []
     curCount = 0
     curVal = array[0][column]
@@ -100,11 +99,11 @@ def evalDistrSum( array, column, step ):
             curCount += 1
             arrIdx += 1
         else:
-            distr.append((curVal, curCount, curEnergy, curEnergy / curCount))
             curVal += step
+            distr.append((curVal, curCount, curEnergy, curEnergy / curCount))
             curCount = 0
             curEnergy = 0
-    distr.append((curVal, curCount, curEnergy, curEnergy / curCount))
+    distr.append((curVal + step, curCount, curEnergy, curEnergy / curCount))
     return distr
 
 
