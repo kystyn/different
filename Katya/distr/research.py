@@ -1,3 +1,7 @@
+import numpy as np
+import gradient
+import math
+
 class Criteria:
     def __init__(self, _num, _left, _right):
         self.columnNum = _num
@@ -143,3 +147,42 @@ def energySum():
 
     print('Введите имя выходного файла для селекции:', end=' ')
     writeToFile(input(), arr)
+
+
+def approxGauss(x, y):
+    n = len(x)
+
+    def gaussian(x, mu, sigma):
+        return 1 / (sigma * math.sqrt(2 * math.pi)) * math.exp(-((x - mu) ** 2) / (2 * sigma ** 2))
+
+    def func(z):
+        mu, sigma = z[0], z[1]
+        res = 0
+
+        for i in range(n):
+            res += (gaussian(x[i], mu, sigma) - y[i]) ** 2
+
+        return res
+
+    def func_gradient(z):
+        mu, sigma = z[0], z[1]
+
+        res_mu = 0
+        res_sigma = 0
+
+        # mu
+        for i in range(n):
+            res_mu += 2 * (gaussian(x[i], mu, sigma) - y[i]) * \
+                   gaussian(x[i], mu, sigma) * (x[i] - mu) / (sigma ** 2)
+
+        # sigma
+        for i in range(n):
+            res_sigma += 2 * (gaussian(x[i], mu, sigma) - y[i]) * 1 / math.sqrt(2 * math.pi) *\
+                         ((-sigma ** 2 + (x[i] - mu) ** 2) / (sigma ** 4)) *\
+                         math.exp(-((x[i] - mu) ** 2) / (2 * sigma ** 2))
+
+        return np.asarray([res_mu, res_sigma])
+
+    solution = gradient.optimal_gradient(func, func_gradient, np.asarray([0, 1]), 1e-3)
+
+    return lambda x: gaussian(x, solution[0][0], solution[0][1])

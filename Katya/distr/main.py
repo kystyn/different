@@ -11,6 +11,7 @@ import seaborn as sns
 
 class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def __init__(self):
+        self.plotDirName = 'data'
         super().__init__()
         self.setupUi(self)
         self.distrSaved.setVisible(False)
@@ -38,13 +39,21 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def buildHistogram(self):
         for startElem, data in self.dataToWrite:
             plt.figure()
-            plt.plot([datum[0] for datum in data],
-                     [datum[1] for datum in data])
+            x = [datum[0] for datum in data]
+            y = [datum[1] for datum in data]
+            plt.plot(x, y, color='blue')
+
+            gaussian = research.approxGauss(x, y)
+
+            x = np.linspace(data[0][0], data[0][-1], 100)
+            plt.plot(x, [gaussian(z) for z in x], color='red')
+
+
             plt.xlabel('Координата')
             plt.ylabel('Энергия')
             plt.title('Начальное событие: ' + str(startElem))
             plt.savefig(self.plotDirName + '/plot_' + str(startElem) + '.png', dpi=600)
-            #plt.show()
+            plt.show()
 
     def setupBuildButton(self):
         def slot():
