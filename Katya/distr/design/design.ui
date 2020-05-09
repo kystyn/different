@@ -161,9 +161,9 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_4">
        <item>
-        <widget class="QPushButton" name="buildButton">
+        <widget class="QPushButton" name="plotDir">
          <property name="text">
-          <string>Построить гистограмму и аппроксимацию</string>
+          <string>Выбрать директорий для графиков</string>
          </property>
         </widget>
        </item>
@@ -185,9 +185,9 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_8">
        <item>
-        <widget class="QPushButton" name="distParamSave">
+        <widget class="QPushButton" name="buildButton">
          <property name="text">
-          <string>Сохранить полученные данные</string>
+          <string>Построить гистограмму и аппроксимацию</string>
          </property>
         </widget>
        </item>
@@ -209,9 +209,9 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_9">
        <item>
-        <widget class="QPushButton" name="plotDir">
+        <widget class="QPushButton" name="distParamSave">
          <property name="text">
-          <string>Выбрать директорий для графиков</string>
+          <string>Сохранить полученные данные</string>
          </property>
         </widget>
        </item>

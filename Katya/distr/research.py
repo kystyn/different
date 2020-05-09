@@ -2,6 +2,14 @@ import numpy as np
 import gradient
 import math
 
+class DistrData:
+    def __init__(self, val, count, energy, mid_energy):
+        self.val = val
+        self.count = count
+        self.energy = energy
+        self.mid_energy = mid_energy
+
+
 class Criteria:
     def __init__(self, _num, _left, _right):
         self.columnNum = _num
@@ -104,10 +112,10 @@ def evalDistrSum(array, column, step):
             arrIdx += 1
         else:
             curVal += step
-            distr.append((curVal, curCount, curEnergy, curEnergy / curCount))
+            distr.append(DistrData(curVal, curCount, curEnergy, curEnergy / curCount))
             curCount = 0
             curEnergy = 0
-    distr.append((curVal + step, curCount, curEnergy, curEnergy / curCount))
+    distr.append(DistrData(curVal + step, curCount, curEnergy, curEnergy / curCount))
     return distr
 
 
@@ -183,6 +191,6 @@ def approxGauss(x, y):
 
         return np.asarray([res_mu, res_sigma])
 
-    solution = gradient.optimal_gradient(func, func_gradient, np.asarray([0, 1]), 1e-3)
+    solution = gradient.optimal_gradient(func, func_gradient, np.asarray([0, 1]), 1e-2)
 
     return lambda x: gaussian(x, solution[0][0], solution[0][1])

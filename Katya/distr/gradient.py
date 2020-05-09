@@ -41,11 +41,10 @@ def optimal_gradient(function, gradient, point, delta):
     # Method begin
     grad = np.array(gradient(point))
     while norm2(grad) >= delta:
-        l = [0]
-        #alpha = fibonacci(lambda a: function(point - a * grad), 0, 1e9, delta)
-        alpha = 20
-        while function(point - alpha * grad) - function(point) > 0.5 * alpha * norm2(gradient(point)):
-            alpha = alpha / 2
+        alpha = fibonacci(lambda a: function(point - a * grad), 0, 1, delta)
+        # alpha = 20
+        # while function(point - alpha * grad) - function(point) > 0.5 * alpha * norm2(gradient(point)):
+        #     alpha = alpha / 2
         newPoint = point - alpha * grad
 
         point = newPoint

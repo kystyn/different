@@ -39,14 +39,21 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def buildHistogram(self):
         for startElem, data in self.dataToWrite:
             plt.figure()
-            x = [datum[0] for datum in data]
-            y = [datum[1] for datum in data]
+            x = np.asarray([datum.val for datum in data])
+            y = np.asarray([datum.mid_energy for datum in data])
             plt.plot(x, y, color='blue')
 
-            gaussian = research.approxGauss(x, y)
+            # need normalize
+            nrm = 0
+            miny = np.min(y)
+            y -= miny
+            for i in range(1, len(y)):
+                nrm += (y[i] + y[i - 1]) * (x[i] - x[i - 1]) / 2
 
-            x = np.linspace(data[0][0], data[0][-1], 100)
-            plt.plot(x, [gaussian(z) for z in x], color='red')
+            gaussian = research.approxGauss(x, y / nrm)
+
+            x = np.linspace(data[0].val, data[-1].val, 100)
+            plt.plot(x, [gaussian(z) * nrm + miny for z in x], color='red')
 
 
             plt.xlabel('Координата')
