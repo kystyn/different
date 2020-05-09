@@ -33,6 +33,7 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.distrSaved.setVisible(True)
 
         self.actionSave.triggered.connect(slot)
+        self.distParamSave.released.connect(lambda: slot(True))
 
     def buildHistogram(self):
         for startElem, data in self.dataToWrite:
@@ -41,9 +42,9 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                      [datum[1] for datum in data])
             plt.xlabel('Координата')
             plt.ylabel('Энергия')
-            plt.show()
-            plt.savefig('data/' + str(startElem) + '.png', dpi=600)
             plt.title('Начальное событие: ' + str(startElem))
+            plt.savefig(self.plotDirName + '/plot_' + str(startElem) + '.png', dpi=600)
+            #plt.show()
 
     def setupBuildButton(self):
         def slot():
@@ -62,10 +63,16 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
         self.buildButton.released.connect(slot)
 
+    def setupPlotDirectory(self):
+        def slot():
+            self.plotDirName = QFileDialog.getExistingDirectory(self, 'Сохранить как', 'data')
+        self.plotDir.released.connect(slot)
+
     def setupSlots(self):
         self.setupOpenFileAction()
         self.setupSaveAsFileAction()
         self.setupBuildButton()
+        self.setupPlotDirectory()
 
 
 def main():
