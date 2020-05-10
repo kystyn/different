@@ -75,7 +75,7 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             gaussian, mu, sigma = research.approxGauss(x, y / nrm)
             self.statsDataToWrite.append((startElem,
                 (self.rawData[min(len(self.rawData) - 1, startElem + self.windowStep)][0],
-                 mu, 2 * sqrt(2 * log(2)) * sigma)))
+                 mu + maxx, 2 * sqrt(2 * log(2)) * sigma)))
 
             x = np.linspace(data[0].val, data[-1].val, 300)
             plt.plot(x, [gaussian(z - maxx) * nrm for z in x], color='red', label='Аппроксимация Гаусс')
@@ -101,7 +101,7 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             for startElem in range(0, len(self.rawData), self.windowStep):
                 self.energyDataToWrite.append\
                     ((startElem, research.evalDistrSum(self.rawData[startElem: min(startElem + self.sampleSize, len(self.rawData) - 1)],
-                                           1, float(self.distrStepLE.text()))))
+                                               1, float(self.distrStepLE.text()))))
 
             self.buildHistogram()
             self.plotsAreBuiltLabel.setVisible(True)

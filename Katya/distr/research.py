@@ -117,10 +117,10 @@ def evalDistrSum(array, column, step):
             arrIdx += 1
         else:
             curVal += step
-            distr.append(DistrData(curVal, curCount, curEnergy, curEnergy / curCount))
+            distr.append(DistrData(curVal, curCount, curEnergy, (curEnergy / curCount if curCount > 0 else 0)))
             curCount = 0
             curEnergy = 0
-    distr.append(DistrData(curVal + step, curCount, curEnergy, curEnergy / curCount))
+    distr.append(DistrData(curVal + step, curCount, curEnergy, (curEnergy / curCount if curCount > 0 else 0)))
     return distr
 
 
