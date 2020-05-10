@@ -20,6 +20,12 @@
    <string>Обработка данных АЭ</string>
   </property>
   <widget class="QWidget" name="centralwidget">
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
    <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
@@ -46,7 +52,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="sampleSize"/>
+        <widget class="QLineEdit" name="sampleSizeLE"/>
        </item>
        <item>
         <spacer name="horizontalSpacer">
@@ -73,7 +79,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="windowStep"/>
+        <widget class="QLineEdit" name="windowStepLE"/>
        </item>
        <item>
         <spacer name="horizontalSpacer_2">
@@ -100,7 +106,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="distrStep"/>
+        <widget class="QLineEdit" name="distrStepLE"/>
        </item>
        <item>
         <spacer name="horizontalSpacer_3">
@@ -168,6 +174,13 @@
         </widget>
        </item>
        <item>
+        <widget class="QLabel" name="choosePlotDir">
+         <property name="text">
+          <string>Директорий не выбран</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer_4">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -192,6 +205,20 @@
         </widget>
        </item>
        <item>
+        <widget class="QCheckBox" name="showPlots">
+         <property name="text">
+          <string>Показывать графики</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="plotsAreBuiltLabel">
+         <property name="text">
+          <string>Графики построены!</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <spacer name="horizontalSpacer_8">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -209,9 +236,16 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_9">
        <item>
-        <widget class="QPushButton" name="distParamSave">
+        <widget class="QPushButton" name="energyParamSave">
          <property name="text">
-          <string>Сохранить полученные данные</string>
+          <string>Сохранить энергетические данные</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="statParamSave">
+         <property name="text">
+          <string>Сохранить статистические данные</string>
          </property>
         </widget>
        </item>
@@ -242,7 +276,7 @@
        <item>
         <widget class="QLabel" name="loadedFileTxt">
          <property name="text">
-          <string/>
+          <string>Файл не загружен</string>
          </property>
         </widget>
        </item>
@@ -264,17 +298,41 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_7">
        <item>
-        <widget class="QLabel" name="distrSaved">
+        <widget class="QLabel" name="energyParamSaved">
          <property name="enabled">
           <bool>true</bool>
          </property>
          <property name="text">
-          <string>Параметры распределений сохранены!</string>
+          <string>Энергетические параметры распределений сохранены!</string>
          </property>
         </widget>
        </item>
        <item>
         <spacer name="horizontalSpacer_7">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_10">
+       <item>
+        <widget class="QLabel" name="statsParamSaved">
+         <property name="text">
+          <string>Статистические параметры распределений сохранены!</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_10">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>

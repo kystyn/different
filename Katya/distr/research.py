@@ -65,7 +65,12 @@ def writeToFile(fileName, array):
     f = open(fileName, 'w')
 
     for s in array:
-        for st in s:
+        iterator = s
+
+        if type(s) == DistrData:
+            iterator = (s.val, s.count, s.energy, s.mid_energy)
+
+        for st in iterator:
             stst = str(st)
             if '.' in stst:
                 f.write(stst[:stst.index('.') + 7] + ' ')
@@ -97,7 +102,7 @@ def makeDistribution( array, column, step ):
 
 
 def evalDistrSum(array, column, step):
-    array.sort(key = lambda row: row[column])
+    array.sort(key=lambda row: row[column])
     distr = []
     curCount = 0
     curVal = array[0][column]
@@ -157,11 +162,11 @@ def energySum():
     writeToFile(input(), arr)
 
 
-def approxGauss(x, y):
+def approxGauss(x, y, nrm=1.0):
     n = len(x)
 
     def gaussian(x, mu, sigma):
-        return 1 / (sigma * math.sqrt(2 * math.pi)) * math.exp(-((x - mu) ** 2) / (2 * sigma ** 2))
+        return nrm / (sigma * math.sqrt(2 * math.pi)) * math.exp(-((x - mu) ** 2) / (2 * sigma ** 2))
 
     def func(z):
         mu, sigma = z[0], z[1]
@@ -185,12 +190,12 @@ def approxGauss(x, y):
 
         # sigma
         for i in range(n):
-            res_sigma += 2 * (gaussian(x[i], mu, sigma) - y[i]) * 1 / math.sqrt(2 * math.pi) *\
+            res_sigma += 2 * (gaussian(x[i], mu, sigma) - y[i]) * nrm / math.sqrt(2 * math.pi) *\
                          ((-sigma ** 2 + (x[i] - mu) ** 2) / (sigma ** 4)) *\
                          math.exp(-((x[i] - mu) ** 2) / (2 * sigma ** 2))
 
         return np.asarray([res_mu, res_sigma])
 
-    solution = gradient.optimal_gradient(func, func_gradient, np.asarray([0, 1]), 1e-2)
+    solution = gradient.optimal_gradient(func, func_gradient, np.asarray([0, 1]), 1e-5)
 
-    return lambda x: gaussian(x, solution[0][0], solution[0][1])
+    return (lambda x: gaussian(x, solution[0][0], solution[0][1])), solution[0][0], solution[0][1]
