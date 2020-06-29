@@ -41,7 +41,8 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         def slot(flag: bool):
             writeFileName = QFileDialog.getSaveFileName(self, 'Сохранить как', 'data', 'TXT files ( *.txt)')[0]
             for startElem, data in self.energyDataToWrite:
-                research.writeToFile(writeFileName + '_energy_' + str(startElem) + '.txt', data)
+                research.writeToFile(writeFileName + '_energy_' + str(startElem) + '.txt', data,
+                                     'Interval begin coordinate | Events count | Complete energy | Mean energy\n')
 
             self.energyParamSaved.setVisible(True)
 
@@ -51,7 +52,8 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def setupStatParamsAction(self):
         def slot():
             writeFileName = QFileDialog.getSaveFileName(self, 'Сохранить как', 'data', 'TXT files ( *.txt)')[0]
-            research.writeToFile(writeFileName + '_stats.txt', [d[1] for d in self.statsDataToWrite])
+            research.writeToFile(writeFileName + '_stats.txt', [d[1] for d in self.statsDataToWrite],
+                                 'Interval end time | Gauss expected value | Raw data argmax | FWHM (FULL width)\n')
             self.statsParamSaved.setVisible(True)
 
         self.statParamSave.released.connect(slot)
@@ -75,7 +77,7 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             gaussian, mu, sigma = research.approxGauss(x, y / nrm)
             self.statsDataToWrite.append((startElem,
                 (self.rawData[min(len(self.rawData) - 1, startElem + self.windowStep)][0],
-                 mu + maxx, 2 * sqrt(2 * log(2)) * sigma)))
+                 mu + maxx, maxx, 2 * sqrt(2 * log(2)) * sigma)))
 
             x = np.linspace(data[0].val, data[-1].val, 300)
             plt.plot(x, [gaussian(z - maxx) * nrm for z in x], color='red', label='Аппроксимация Гаусс')

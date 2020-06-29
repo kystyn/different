@@ -61,9 +61,10 @@ def readCriteries():
     return criteries
 
 
-def writeToFile(fileName, array):
+def writeToFile(fileName, array, header=''):
     f = open(fileName, 'w')
 
+    f.write(header)
     for s in array:
         iterator = s
 
