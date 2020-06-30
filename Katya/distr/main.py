@@ -42,7 +42,7 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             writeFileName = QFileDialog.getSaveFileName(self, 'Сохранить как', 'data', 'TXT files ( *.txt)')[0]
             for startElem, data in self.energyDataToWrite:
                 research.writeToFile(writeFileName + '_energy_' + str(startElem) + '.txt', data,
-                                     'Interval begin coordinate | Events count | Complete energy | Mean energy\n')
+                                     'Interval_end_coordinate Events_count Complete_energy Mean_energy\n')
 
             self.energyParamSaved.setVisible(True)
 
@@ -53,7 +53,7 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         def slot():
             writeFileName = QFileDialog.getSaveFileName(self, 'Сохранить как', 'data', 'TXT files ( *.txt)')[0]
             research.writeToFile(writeFileName + '_stats.txt', [d[1] for d in self.statsDataToWrite],
-                                 'Interval end time | Gauss expected value | Raw data argmax | FWHM (FULL width)\n')
+                                 'Interval_end_time Gauss_expected_value Raw_data_argmax FWHM_(FULL_width)\n')
             self.statsParamSaved.setVisible(True)
 
         self.statParamSave.released.connect(slot)
