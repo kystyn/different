@@ -53,7 +53,8 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         def slot():
             writeFileName = QFileDialog.getSaveFileName(self, 'Сохранить как', 'data', 'TXT files ( *.txt)')[0]
             research.writeToFile(writeFileName + '_stats.txt', [d[1] for d in self.statsDataToWrite],
-                                 'Interval_end_time Gauss_expected_value Raw_data_argmax FWHM_(FULL_width)\n')
+                                 'Interval_end_time Gauss_expected_value Raw_data_argmax FWHM_(FULL_width) '
+                                 'Esum_Gauss Esum_raw\n')
             self.statsParamSaved.setVisible(True)
 
         self.statParamSave.released.connect(slot)
@@ -67,7 +68,8 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
             # need normalize
             nrm = 0
-            maxx = x[np.argmax(y)]
+            argmaxx = np.argmax(y)
+            maxx = x[argmaxx]
             #miny = np.min(y)
             #y -= miny
             x -= maxx
@@ -77,7 +79,8 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             gaussian, mu, sigma = research.approxGauss(x, y / nrm)
             self.statsDataToWrite.append((startElem,
                 (self.rawData[min(len(self.rawData) - 1, startElem + self.windowStep)][0],
-                 mu + maxx, maxx, 2 * sqrt(2 * log(2)) * sigma)))
+                 mu + maxx, maxx, 2 * sqrt(2 * log(2)) * sigma,
+                 gaussian(x[argmaxx]) * nrm, y[argmaxx])))
 
             x = np.linspace(data[0].val, data[-1].val, 300)
             plt.plot(x, [gaussian(z - maxx) * nrm for z in x], color='red', label='Аппроксимация Гаусс')
