@@ -1,0 +1,6 @@
+var a00130 =
+[
+    [ "GETFACTINTERFACEVERSION", "a00130.html#a79ea452bb9d29d39060c76c8aee7546d", null ],
+    [ "GETFACTORYINSTANCE", "a00130.html#aa168897dfbdcd7caaca5d3f70c156018", null ],
+    [ "RELEASEFACTORYINSTANCE", "a00130.html#ab1795a52533058974a15cdec70605c95", null ]
+];
