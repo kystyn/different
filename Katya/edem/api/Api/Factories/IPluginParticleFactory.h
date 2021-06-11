@@ -1,7 +1,7 @@
 #ifndef IPLUGINPARTICLEFACTORY_H
 #define IPLUGINPARTICLEFACTORY_H
 
-#include "ApiTypes.h"
+#include <Api/Core/ApiTypes.h>
 
 /**
  * The NApiFactory namespace contains all interfaces related

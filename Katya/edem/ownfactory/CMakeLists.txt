@@ -3,7 +3,7 @@ project(ownfactory)
 cmake_minimum_required(VERSION 3.8)
 set(CMAKE_CXX_STANDARD 17)
 
-option(BUILD_WIN "True if WIN False if x86_64" OFF)
+option(BUILD_WIN "True if WIN False if linux" OFF)
 
 if (BUILD_WIN)
 	set(CMAKE_C_COMPILER   i686-w64-mingw32-gcc)
@@ -14,7 +14,6 @@ set(SOURCES factory.cpp)
 
 # for convenient IDE job
 set(HEADERS factory.h)
-
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 

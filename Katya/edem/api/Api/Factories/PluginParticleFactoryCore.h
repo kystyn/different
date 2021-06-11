@@ -6,7 +6,7 @@
 /* all V2.0.0 and later particle factory plugins.                          */
 /***************************************************************************/
 
-#include "PluginConstants.h"
+#include <Api/Core/PluginConstants.h>
 
 namespace NApiFactory
 {

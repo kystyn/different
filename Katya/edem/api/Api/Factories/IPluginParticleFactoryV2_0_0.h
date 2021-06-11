@@ -12,11 +12,11 @@
 
 // Include ALL required headers.  Do not use forward declarations, this
 // makes things easier on the end user
-#include "PluginConstants.h"
+#include <Api/Core/ApiTypes.h>
+#include <Api/Core/IApiManager_1_0.h>
+#include <Api/Core/ICustomPropertyDataApi_1_0.h>
+#include <Api/Core/PluginConstants.h>
 #include "IPluginParticleFactory.h"
-#include "ApiTypes.h"
-#include "IApiManager_1_0.h"
-#include "ICustomPropertyDataApi_1_0.h"
 
 namespace NApiFactory
 {
