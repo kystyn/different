@@ -42,7 +42,7 @@ NApi::ECalculateResult PTIIoffeFactory::createParticle(
     if (!particleCreated)
         return NApi::ECalculateResult::eSuccess;
 
-    additionalParticleRequired = false;
+    additionalParticleRequired = true;
     strcpy(type, "Katya");
     scale = radiuses[curno];
     Point &pt = centers[curno];
@@ -51,6 +51,8 @@ NApi::ECalculateResult PTIIoffeFactory::createParticle(
     posZ = pt.z;
     velX = velY = velZ = 0;
     angVelX = angVelY = angVelZ = 0;
+
+    for (unsigned int i = 0; i < 9; i++)     {         orientation[i] = 0.0;     }
 
     curno = std::min(curno + 1, centers.size());
 
@@ -101,19 +103,19 @@ bool PTIIoffeFactory::readRadiuses(const std::string &fileName)
     return true;
 }
 
-NApiFactory::IPluginParticleFactory *GETFACTORYINSTANCE()
+EXPORT_MACRO NApiFactory::IPluginParticleFactory *GETFACTORYINSTANCE()
 {
     return new PTIIoffeFactory;
 }
 
-void RELEASEFACTORYINSTANCE(NApiFactory::IPluginParticleFactory *instance)
+EXPORT_MACRO void RELEASEFACTORYINSTANCE(NApiFactory::IPluginParticleFactory *instance)
 {
     auto factory = dynamic_cast<PTIIoffeFactory *>(instance);
     if (factory != nullptr)
         delete factory;
 }
 
-int GETFACTINTERFACEVERSION()
+EXPORT_MACRO int GETFACTINTERFACEVERSION()
 {
     return 1;
 }
