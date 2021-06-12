@@ -16,6 +16,8 @@ set(SOURCES factory.cpp)
 set(HEADERS factory.h)
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
+add_executable(${PROJECT_NAME}_test test.cpp ${SOURCES} ${HEADERS})
 
 target_include_directories(${PROJECT_NAME} PRIVATE ../api)
+target_include_directories(${PROJECT_NAME}_test PRIVATE ../api)
 

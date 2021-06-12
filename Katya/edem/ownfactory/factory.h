@@ -10,7 +10,8 @@
 
 struct Point
 {
-    Point( float x, float y, float z ) : x(x), y(y), z(z) {}
+    Point( double x, double y, double z ) : x(x), y(y), z(z)
+    {}
 
     double x, y, z;
 };

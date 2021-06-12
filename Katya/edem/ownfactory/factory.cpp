@@ -52,7 +52,7 @@ NApi::ECalculateResult PTIIoffeFactory::createParticle(
     velX = velY = velZ = 0;
     angVelX = angVelY = angVelZ = 0;
 
-    curno = std::max(curno + 1, centers.size());
+    curno = std::min(curno + 1, centers.size());
 
     return NApi::ECalculateResult::eSuccess;
 }
@@ -74,7 +74,8 @@ bool PTIIoffeFactory::readCenters(const std::string &fileName)
         std::getline(iss, x, ',');
         std::getline(iss, y, ',');
         std::getline(iss, z, ','); // or \n?
-        centers.push_back(Point(std::stof(x), std::stof(y), std::stof(z)));
+        auto pt = Point(std::stod(x), std::stod(y), std::stod(z));
+        centers.push_back(pt);
     }
     return true;
 }
@@ -94,7 +95,7 @@ bool PTIIoffeFactory::readRadiuses(const std::string &fileName)
         std::string num, r;
         std::getline(iss, num, ',');
         std::getline(iss, r, ',');
-        radiuses.push_back(std::stof(r));
+        radiuses.push_back(std::stod(r));
     }
 
     return true;
