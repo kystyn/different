@@ -3,12 +3,13 @@ import gradient
 import math
 
 class DistrData:
-    def __init__(self, val, count, energy, mid_energy):
+    def __init__(self, val, count, energy, mid_energy, max_energy, max_energy_coord):
         self.val = val
         self.count = count
         self.energy = energy
         self.mid_energy = mid_energy
-
+        self.max_energy = max_energy
+        self.max_energy_coord = max_energy_coord
 
 class Criteria:
     def __init__(self, _num, _left, _right):
@@ -69,14 +70,10 @@ def writeToFile(fileName, array, header=''):
         iterator = s
 
         if type(s) == DistrData:
-            iterator = (s.val, s.count, s.energy, s.mid_energy)
+            iterator = (s.val, s.count, s.energy, s.mid_energy, s.max_energy)
 
         for st in iterator:
-            stst = str(st)
-            if '.' in stst:
-                f.write(stst[:stst.index('.') + 7] + ' ')
-            else:
-                f.write(stst + ' ')
+            f.write('%.6f ' % st)
         f.write('\n')
 
     f.close()
@@ -108,20 +105,28 @@ def evalDistrSum(array, column, step):
     curCount = 0
     curVal = array[0][column]
     curEnergy = 0
+    maxEnergy = 0
+    maxEnergyCoord = 0
 
     arrIdx = 0
 
     while arrIdx < len(array):
         if curVal <= array[arrIdx][column] < curVal + step:
             curEnergy += array[arrIdx][2]
+            if array[arrIdx][2] > maxEnergy:
+                maxEnergy = array[arrIdx][2]
+                maxEnergyCoord = array[arrIdx][1]
+            
             curCount += 1
             arrIdx += 1
         else:
             curVal += step
-            distr.append(DistrData(curVal, curCount, curEnergy, (curEnergy / curCount if curCount > 0 else 0)))
+            distr.append(DistrData(curVal, curCount, curEnergy, (curEnergy / curCount if curCount > 0 else 0), maxEnergy, maxEnergyCoord))
             curCount = 0
             curEnergy = 0
-    distr.append(DistrData(curVal + step, curCount, curEnergy, (curEnergy / curCount if curCount > 0 else 0)))
+            maxEnergy = 0
+            maxEnergyCoord = 0
+    distr.append(DistrData(curVal + step, curCount, curEnergy, (curEnergy / curCount if curCount > 0 else 0), maxEnergy, maxEnergyCoord))
     return distr
 
 
@@ -148,6 +153,7 @@ def distr():
     print('Введите имя выходного файла для селекции:', end=' ')
     writeToFile(input(), arr)
 
+    
     readDistrInput(arr)
 
 

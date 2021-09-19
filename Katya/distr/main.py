@@ -42,7 +42,7 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             writeFileName = QFileDialog.getSaveFileName(self, 'Сохранить как', 'data', 'TXT files ( *.txt)')[0]
             for startElem, data in self.energyDataToWrite:
                 research.writeToFile(writeFileName + '_energy_' + str(startElem) + '.txt', data,
-                                     'Interval_end_coordinate Events_count Complete_energy Mean_energy\n')
+                                     'Interval_end_coordinate Events_count Complete_energy Mean_energy Max_energy\n')
 
             self.energyParamSaved.setVisible(True)
 
@@ -54,7 +54,7 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             writeFileName = QFileDialog.getSaveFileName(self, 'Сохранить как', 'data', 'TXT files ( *.txt)')[0]
             research.writeToFile(writeFileName + '_stats.txt', [d[1] for d in self.statsDataToWrite],
                                  'Interval_end_time Gauss_expected_value Raw_data_argmax FWHM_(FULL_width) '
-                                 'Esum_Gauss Esum_raw\n')
+                                 'Esum_Gauss Esum_raw Emax_raw Emax_coord_raw\n')
             self.statsParamSaved.setVisible(True)
 
         self.statParamSave.released.connect(slot)
@@ -77,10 +77,12 @@ class MyApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                 nrm += (y[i] + y[i - 1]) * (x[i] - x[i - 1]) / 2
 
             gaussian, mu, sigma = research.approxGauss(x, y / nrm)
+            max_en_arr = np.array([datum.max_energy for datum in data])
+            max_en, max_en_coord  = np.max(max_en_arr), data[np.argmax(max_en_arr)].max_energy_coord
             self.statsDataToWrite.append((startElem,
                 (self.rawData[min(len(self.rawData) - 1, startElem + self.windowStep)][0],
                  mu + maxx, maxx, 2 * sqrt(2 * log(2)) * sigma,
-                 gaussian(x[argmaxx]) * nrm, y[argmaxx])))
+                 gaussian(x[argmaxx]) * nrm, y[argmaxx], max_en, max_en_coord)))
 
             x = np.linspace(data[0].val, data[-1].val, 300)
             plt.plot(x, [gaussian(z - maxx) * nrm for z in x], color='red', label='Аппроксимация Гаусс')
