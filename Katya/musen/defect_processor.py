@@ -146,6 +146,7 @@ def process_particles_bonds(particles: dict, bonds: dict, radius: float,
         for time, position in positions.items():
             if not is_particle_in_ROI(radius, height, bond_length, *position):
                 particle_death[id] = prev_time
+                break
             prev_time = time
 
     # re-evaluate death time of bonds according to death times of particles
