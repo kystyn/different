@@ -173,7 +173,7 @@ def process_particles_bonds(particles: dict, bonds: dict, radius: float,
 
             middle_coord = tuple((begin_coord[i] + end_coord[i]) / 2 for i in range(3))
             
-            output = sep.join(list_to_str([id, *middle_coord, begin_id, *begin_coord, end_id, *end_coord]))
+            output = sep.join(list_to_str([id, *middle_coord, death_tp, begin_id, *begin_coord, end_id, *end_coord]))
             f.write(output + '\n')
 
 
