@@ -106,9 +106,9 @@ def load_bonds(bond_filename: str):
 
 def is_particle_in_ROI(radius: float, height: float, bond_length: float, 
                         x: float, y: float, z: float) -> bool:
-    if not (-(height + bond_length) <= y < height + bond_length):
+    if not (-(height + bond_length) <= z < height + bond_length):
         return False
-    if x * x + z * z > radius + bond_length:
+    if x * x + y * y > radius + bond_length:
         return False
     return True
 
