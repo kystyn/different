@@ -30,7 +30,7 @@ def load_particles(particle_filename: str):
                     time = float(data[idx + 1])
                     if data[idx + 2] != coord_marker:
                         raise RuntimeError(f'{coord_marker} is expected after <{time_marker} tp>. Got {data[idx + 2]}')
-                    pos = (float(data[idx + 3]), float(data[idx + 4]), float(data[idx + 5]))
+                    pos = (float(data[idx + 3]) * 1000, float(data[idx + 4]) * 1000, float(data[idx + 5]) * 1000)
                     idx += 6
                     positions[time] = pos
                 else:
@@ -108,7 +108,7 @@ def is_particle_in_ROI(radius: float, height: float, bond_length: float,
                         x: float, y: float, z: float) -> bool:
     if not (-(height + bond_length) <= z < height + bond_length):
         return False
-    if x * x + y * y > radius + bond_length:
+    if x * x + y * y > (radius + bond_length) ** 2:
         return False
     return True
 
@@ -141,7 +141,7 @@ def process_particles_bonds(particles: dict, bonds: dict, radius: float,
     # add death time to all particles if they flew out of sample
     particle_death = {id: 2 ** 100 for id in particles}
     for id, particle in tqdm(particles.items(), desc='Evaluate particle death time. Step #1', total=len(particles)):
-        radius, positions = particle
+        rad, positions = particle
         prev_time = 0
         for time, position in positions.items():
             if not is_particle_in_ROI(radius, height, bond_length, *position):
