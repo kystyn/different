@@ -166,11 +166,16 @@ def process_particles_bonds(particles: dict, bonds: dict, radius: float,
         for id, bond in tqdm(bonds.items(), desc='Save result to file', total=len(bonds)):
             begin_id, end_id, death_tp = bond[0], bond[1], bond[2]
 
+            if death_tp > time_points[-1]:
+                continue
+
+            tp = binary_search(time_points, death_tp)[1]
+
             begin_radius, begin_positions = particles[begin_id]
-            begin_coord = begin_positions[binary_search(time_points, death_tp)[1]]#[death_tp]
+            begin_coord = begin_positions[tp]
 
             end_radius, end_positions = particles[end_id]
-            end_coord = end_positions[binary_search(time_points, death_tp)[1]]
+            end_coord = end_positions[tp]
 
             middle_coord = tuple((begin_coord[i] + end_coord[i]) / 2 for i in range(3))
             
