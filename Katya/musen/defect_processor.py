@@ -1,5 +1,6 @@
 from tqdm import tqdm
 import argparse
+from pathlib import Path
 
 
 def load_particles(particle_filename: str):
@@ -12,12 +13,12 @@ def load_particles(particle_filename: str):
 
     with open(particle_filename, 'r') as f:
         lines = f.readlines()
-        for l in tqdm(lines, desc='Reading particle file', total=len(lines)):
+        for idx, l in tqdm(enumerate(lines), desc='Reading particle file', total=len(lines)):
             data = l.split(' ')
             if data[0] == '\n':
                 continue
             if data[0] != '0':
-                raise RuntimeError(f'First column is expected to be zero, got {data[0]}')
+                raise RuntimeError(f'Line {idx}: First column is expected to be zero, got {data[0]}')
             id = int(data[1])
             radius = -1
             positions = {} # key -- time point, value -- (x, y, z)
@@ -29,7 +30,7 @@ def load_particles(particle_filename: str):
                 elif data[idx] == time_marker:
                     time = float(data[idx + 1])
                     if data[idx + 2] != coord_marker:
-                        raise RuntimeError(f'{coord_marker} is expected after <{time_marker} tp>. Got {data[idx + 2]}')
+                        raise RuntimeError(f'Line {idx}: {coord_marker} is expected after <{time_marker} tp>. Got {data[idx + 2]}')
                     pos = (float(data[idx + 3]) * 1000, float(data[idx + 4]) * 1000, float(data[idx + 5]) * 1000)
                     idx += 6
                     positions[time] = pos
@@ -37,11 +38,11 @@ def load_particles(particle_filename: str):
                     idx += 1
             if events != -1:
                 if len(positions) != events:
-                    raise RuntimeError('Different particles have different events count')
+                    raise RuntimeError(f'Line {idx}: Different particles have different events count')
             else:
                 events = len(positions)
             if radius == -1:
-                raise RuntimeError('Radius was not mentioned')
+                raise RuntimeError(f'Line {idx}: Radius was not mentioned')
             particles[id] = (radius, positions)
     return particles, events
 
@@ -63,7 +64,7 @@ def load_bonds(bond_filename: str):
             if data[0] == '\n':
                 continue
             if data[0] != '0':
-                raise RuntimeError(f'First column is expected to be zero, got {data[0]}')
+                raise RuntimeError(f'Line {idx}: First column is expected to be zero, got {data[0]}')
             id = int(data[1])
             begin_id = -1
             end_id = -1
@@ -77,11 +78,11 @@ def load_bonds(bond_filename: str):
                 elif data[idx] == ttl_marker:
                     start_tp, death_tp = float(data[idx + 1]), float(data[idx + 2])
                     if start_tp != 0:
-                        raise RuntimeError(f'Particle was born unexpected: born time is {start_tp}, expected 0')
+                        raise RuntimeError(f'Line {idx}: Particle was born unexpected: born time is {start_tp}, expected 0')
                     idx += 3
                 elif data[idx] == time_marker:
                     if data[idx + 2] != force_marker:
-                        raise RuntimeError(f'Expected force marker {force_marker}, got {data[idx + 2]}')
+                        raise RuntimeError(f'Line {idx}: Expected force marker {force_marker}, got {data[idx + 2]}')
 
                     time = float(data[idx + 1])
                     force = float(data[idx + 3])
@@ -94,10 +95,10 @@ def load_bonds(bond_filename: str):
                 else:
                     idx += 1
             if begin_id == -1 or end_id == -1 or death_tp == -1:
-                raise RuntimeError(f'Expected begin and end particle id, death time point. Got {begin_id}, {end_id}, {death_tp}')
+                raise RuntimeError(f'Line {idx}: Expected begin and end particle id, death time point. Got {begin_id}, {end_id}, {death_tp}')
             if events != -1:
                 if cur_events != events:
-                    raise RuntimeError('Different particles have different events count')
+                    raise RuntimeError(f'Line {idx}: Different particles have different events count')
             else:
                 events = cur_events
             bonds[id] = [begin_id, end_id, death_tp]
@@ -155,13 +156,17 @@ def process_particles_bonds(particles: dict, bonds: dict, radius: float,
         # assign new death time as minimum of all death times
         bond[2] = min(particle_death[begin_id], particle_death[end_id], death_tp)
 
-    with open(out_filename, 'w') as f:
+    with open(out_filename, 'w') as f, open(str(Path(out_filename).parent /'time_points.txt'), 'w') as tpf:
         time_points = list(particles[next(iter(particles))][1].keys())
         time_points.sort()
 
-        f.write(sep.join(['BondId', 'BondX', 'BondY', 'BondZ', 'DeathT',
-                'BeginParticleId', 'BeginParticleX', 'BeginParticleY', 'BeginParticleZ',
-                'EndParticleId', 'EndParticleX', 'EndParticleY', 'EndParticleZ']) + '\n')
+        for tp in time_points:
+            tpf.write(f'{tp} ')
+        tpf.write('\n')
+
+        f.write(sep.join(['BondId', 'BondX,mm', 'BondY,mm', 'BondZ,mm', 'DeathT,s',
+                'BeginParticleId', 'BeginParticleX,mm', 'BeginParticleY,mm', 'BeginParticleZ,mm',
+                'EndParticleId', 'EndParticleX,mm', 'EndParticleY,mm', 'EndParticleZ,mm']) + '\n')
 
         for id, bond in tqdm(bonds.items(), desc='Save result to file', total=len(bonds)):
             begin_id, end_id, death_tp = bond[0], bond[1], bond[2]
@@ -196,17 +201,20 @@ def main():
                         help='Sample height')
     parser.add_argument('--length', '-l', default=0.3, type=float,
                         help='Average bond length')
-    parser.add_argument('--out', '-o', default='out.txt', type=str,
+    parser.add_argument('--out', '-o', default='bonds_preprocessed.txt', type=str,
                         help='Output file')                        
 
     args = parser.parse_args()
-    particles, particles_events = load_particles(args.particle)
-    bonds, bonds_events = load_bonds(args.bond)
+    try:
+        particles, particles_events = load_particles(args.particle)
+        bonds, bonds_events = load_bonds(args.bond)
 
-    if particles_events != bonds_events:
-        raise RuntimeError(f'Bond and particles files are mismatched. '\
-                        f'Got {particles_events} particles events, {bonds_events} bonds events')
-    process_particles_bonds(particles, bonds, args.radius, args.height, args.length, args.out)    
+        if particles_events != bonds_events:
+            raise RuntimeError(f'Bond and particles files are mismatched. '\
+                            f'Got {particles_events} particles events, {bonds_events} bonds events')
+        process_particles_bonds(particles, bonds, args.radius, args.height, args.length, args.out)    
+    except Exception as e:
+        print(f'Exception occured: {e}')
 
 
 if __name__ == '__main__':
