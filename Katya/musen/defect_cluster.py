@@ -7,6 +7,7 @@ import csv
 from pathlib import Path
 from tqdm import tqdm
 from functools import cmp_to_key
+import matplotlib.pyplot as plt
 
 
 def binary_search(arr, elem):
@@ -58,11 +59,15 @@ def compare_bonds(bond1, bond2):
     return cmp_format(phi1, phi2)
 
 
-def make_clusters(filename: str, output_dir: str, dist_thr: float, step: float, integral: bool):
+def make_clusters(
+        filename: str, output_dir: str, dist_thr: float, 
+        step: float, integral: bool, show: bool):
     xlist = []
     ylist = []
     zlist = []
     deathtlist = []
+    num_clusters_to_show = 10
+
     print(f'Loading {filename}')
     with open(filename, 'r') as f:
         reader = csv.DictReader(f, delimiter=' ')
@@ -87,9 +92,8 @@ def make_clusters(filename: str, output_dir: str, dist_thr: float, step: float, 
         data[round_t].append(np.array([cx, cy, cz]))
 
     if integral:
-        for idx, t in enumerate(time_points):
-            for i in range(idx):
-                data[t] += data[time_points[i]]
+        for idx, t in enumerate(time_points[1:]):
+            data[t] += data[time_points[idx]]
 
     print('Loading finished')
 
@@ -103,9 +107,13 @@ def make_clusters(filename: str, output_dir: str, dist_thr: float, step: float, 
             f.write(' '.join(['X,mm', 'Y,mm', 'Z,mm', 'D,mm', 'N']) + '\n')
             # try-catch is KOSTYL'
             try:
-                part_len = 8000
-                num_parts = len(bonds) // part_len
+                part_len = 15000
+                num_parts = (len(bonds) + part_len - 1) // part_len
                 bonds.sort(key=cmp_to_key(compare_bonds))
+
+                fig = plt.figure()
+                ax = plt.axes(projection='3d')  
+                ax.set_label(f'Time {t}')
 
                 for part in range(num_parts):
                     clustering = AgglomerativeClustering(
@@ -117,8 +125,24 @@ def make_clusters(filename: str, output_dir: str, dist_thr: float, step: float, 
                     
                     clustered = [[] for _ in range(clustering.n_clusters_)]
 
+                    clustered_x = [[] for _ in range(clustering.n_clusters_)]
+                    clustered_y = [[] for _ in range(clustering.n_clusters_)]
+                    clustered_z = [[] for _ in range(clustering.n_clusters_)]
+
+
                     for label, elem in zip(clustering.labels_, bonds):
                         clustered[label].append(elem)
+
+                    for label in range(len(clustered)):
+                        clustered[label] = np.asarray(clustered[label])
+
+                    for label in range(len(clustered)):
+                        clustered_x[label] = np.asarray(clustered[label][:, 0])
+                        clustered_y[label] = np.asarray(clustered[label][:, 1])
+                        clustered_z[label] = np.asarray(clustered[label][:, 2])
+
+                    ordered_labels = sorted(list(range(clustering.n_clusters_)), 
+                                    key=lambda idx: len(clustered_x[idx]))
 
                     #center_x = [0] * len(clustering.n_clusters_) # idx -- label
                     #center_y = [0] * len(clustering.n_clusters_)
@@ -148,6 +172,13 @@ def make_clusters(filename: str, output_dir: str, dist_thr: float, step: float, 
                         #center_z[label] = cz
                         #diameters[label] = d
                         f.write(' '.join(list_to_str([cx, cy, cz, d, len(clustered[label])])) + '\n')
+
+                        if label in ordered_labels[-num_clusters_to_show:]:
+                            ax.scatter3D(clustered_x[label], clustered_y[label], clustered_z[label])
+                if show:
+                    plt.show()
+                plt.savefig(f'{output_dir}/img_' + '{:5f}.png'.format(t) )
+
             except Exception as e:
                 print(f'Exception occured: {e}')
         
@@ -164,9 +195,13 @@ def main():
                         help='Time interval to build clusters')
     parser.add_argument('--integral', action='store_false',
                         help='Integral storage of bonds')
+    parser.add_argument('--show', action='store_false',
+                        help='Show plots')                        
 
     args = parser.parse_args()
-    make_clusters(args.input, args.output, args.distance, args.step, args.integral)
+    make_clusters(
+        args.input, args.output, args.distance,
+        args.step, args.integral, args.show)
 
 
 if __name__ == '__main__':
