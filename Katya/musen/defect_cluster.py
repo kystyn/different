@@ -195,7 +195,7 @@ def main():
                         help='Time interval to build clusters')
     parser.add_argument('--integral', action='store_false',
                         help='Integral storage of bonds')
-    parser.add_argument('--show', action='store_false',
+    parser.add_argument('--show', action='store_true',
                         help='Show plots')                        
 
     args = parser.parse_args()
