@@ -171,7 +171,7 @@ def process_particles_bonds(particles: dict, bonds: dict, radius: float,
         for id, bond in tqdm(bonds.items(), desc='Save result to file', total=len(bonds)):
             begin_id, end_id, death_tp = bond[0], bond[1], bond[2]
 
-            if death_tp > time_points[-1]:
+            if death_tp > time_points[-1] - 1e-5:
                 continue
 
             tp = binary_search(time_points, death_tp)[1]

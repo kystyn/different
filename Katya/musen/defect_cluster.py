@@ -107,7 +107,7 @@ def make_clusters(
             f.write(' '.join(['X,mm', 'Y,mm', 'Z,mm', 'D,mm', 'N']) + '\n')
             # try-catch is KOSTYL'
             try:
-                part_len = 15000
+                part_len = 90000
                 num_parts = (len(bonds) + part_len - 1) // part_len
                 bonds.sort(key=cmp_to_key(compare_bonds))
 
@@ -118,7 +118,7 @@ def make_clusters(
                 for part in range(num_parts):
                     clustering = AgglomerativeClustering(
                         n_clusters=None,
-                        #linkage='complete',
+                        linkage='single',
                         memory=str(Path.cwd()), 
                         distance_threshold=dist_thr,
                         compute_full_tree=True).fit(bonds[part * part_len:min((part + 1) * part_len, len(bonds))])
@@ -144,6 +144,9 @@ def make_clusters(
                     ordered_labels = sorted(list(range(clustering.n_clusters_)), 
                                     key=lambda idx: len(clustered_x[idx]))
 
+                    max_cluster=clustered[ordered_labels[-1]]
+                    np.savetxt(f'{output_dir}/max_cluster'+'{:5f}.txt'.format(t), max_cluster)
+                    
                     #center_x = [0] * len(clustering.n_clusters_) # idx -- label
                     #center_y = [0] * len(clustering.n_clusters_)
                     #center_z = [0] * len(clustering.n_clusters_)
@@ -185,13 +188,13 @@ def make_clusters(
 
 def main():
     parser = argparse.ArgumentParser(description='Musen defect clusteriser')
-    parser.add_argument('--input', '-i', default='bonds_preprocessed.txt', type=str,
+    parser.add_argument('--input', '-i', default='Broken_bonds_01_09_22.txt', type=str,
                         help='Preprocessed bond file')
-    parser.add_argument('--output', '-o', default='clustered', type=str,
+    parser.add_argument('--output', '-o', default='cluster_test', type=str,
                         help='Directory for output with clustered bonds')
-    parser.add_argument('--distance', '-d', default=0.5, type=float,
+    parser.add_argument('--distance', '-d', default=0.2, type=float,
                         help='Distance threshold for clustring')
-    parser.add_argument('--step', '-s', default=0.001, type=float,
+    parser.add_argument('--step', '-s', default=0.0005, type=float,
                         help='Time interval to build clusters')
     parser.add_argument('--integral', action='store_false',
                         help='Integral storage of bonds')
