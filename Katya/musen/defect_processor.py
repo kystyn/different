@@ -21,7 +21,7 @@ def load_particles(particle_filename: str):
                 raise RuntimeError(f'Line {idx}: First column is expected to be zero, got {data[0]}')
             id = int(data[1])
             radius = -1
-            positions = {} # key -- time point, value -- (x, y, z)
+            positions = [] # key -- time point, value -- (x, y, z)
             idx = 2
             while idx < len(data):
                 if data[idx] == radius_marker:
@@ -33,7 +33,7 @@ def load_particles(particle_filename: str):
                         raise RuntimeError(f'Line {idx}: {coord_marker} is expected after <{time_marker} tp>. Got {data[idx + 2]}')
                     pos = (float(data[idx + 3]) * 1000, float(data[idx + 4]) * 1000, float(data[idx + 5]) * 1000)
                     idx += 6
-                    positions[time] = pos
+                    positions.append((time, pos))
                 else:
                     idx += 1
             if events != -1:
@@ -144,7 +144,7 @@ def process_particles_bonds(particles: dict, bonds: dict, radius: float,
     for id, particle in tqdm(particles.items(), desc='Evaluate particle death time. Step #1', total=len(particles)):
         rad, positions = particle
         prev_time = 0
-        for time, position in positions.items():
+        for time, position in positions:
             if not is_particle_in_ROI(radius, height, bond_length, *position):
                 particle_death[id] = prev_time
                 break
@@ -157,8 +157,11 @@ def process_particles_bonds(particles: dict, bonds: dict, radius: float,
         bond[2] = min(particle_death[begin_id], particle_death[end_id], death_tp)
 
     with open(out_filename, 'w') as f, open(str(Path(out_filename).parent /'time_points.txt'), 'w') as tpf:
-        time_points = list(particles[next(iter(particles))][1].keys())
-        time_points.sort()
+        time_points = []
+        particle0 = particles[next(iter(particles))][1]
+        for tp, position in particle0:
+            time_points.append(tp)
+        #time_points.sort() -- is not needed anymore
 
         for tp in time_points:
             tpf.write(f'{tp} ')
@@ -174,13 +177,13 @@ def process_particles_bonds(particles: dict, bonds: dict, radius: float,
             if death_tp > time_points[-1] - 1e-5:
                 continue
 
-            tp = binary_search(time_points, death_tp)[1]
+            tp_idx = binary_search(time_points, death_tp)[0]
 
             begin_radius, begin_positions = particles[begin_id]
-            begin_coord = begin_positions[tp]
+            begin_coord = begin_positions[tp_idx][1]
 
             end_radius, end_positions = particles[end_id]
-            end_coord = end_positions[tp]
+            end_coord = end_positions[tp_idx][1]
 
             middle_coord = tuple((begin_coord[i] + end_coord[i]) / 2 for i in range(3))
             
