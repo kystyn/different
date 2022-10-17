@@ -69,7 +69,7 @@ def load_bonds(bond_filename: str):
             begin_id = -1
             end_id = -1
             death_tp = -1
-            idx = 0
+            idx = 2
             cur_events = 0
             while idx < len(data):
                 if data[idx] == ends_marker:
