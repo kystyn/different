@@ -96,7 +96,7 @@ def load_bonds(bond_filename: str):
                 elif data[idx] == coord_marker:
                     x, y, z = float(data[idx + 1]), float(data[idx + 2]), float(data[idx + 3])
                     # suppose coordinates appear after time
-                    times[time] = (x, y, z)
+                    times[time] = (x * 1000, y * 1000, z * 1000)
                     idx += 4
                 elif data[idx] == mtl_marker:
                     mtl = data[idx + 1]
