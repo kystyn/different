@@ -150,7 +150,7 @@ def make_clusters(
                         max_cluster_len = max(max_cluster_len, len(max_cluster))
                         cluster_cnt += clustering.n_clusters_
                         np.savetxt(f'{output_dir}/max_cluster_part{part}_'+'{:5f}.txt'.format(t), max_cluster,
-                                    header='X\tY\tZ')
+                                    header='X\tY\tZ', comments='')
                         
                         #center_x = [0] * len(clustering.n_clusters_) # idx -- label
                         #center_y = [0] * len(clustering.n_clusters_)
