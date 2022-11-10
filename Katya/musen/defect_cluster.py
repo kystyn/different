@@ -110,10 +110,10 @@ def make_clusters(
                 f.write(sep.join(['X,mm', 'Y,mm', 'Z,mm', 'D,mm', 'N']) + '\n')
                 # try-catch is KOSTYL'
                 try:
-                    part_len = 90000
-                    num_parts = (len(bonds) + part_len - 1) // part_len
-                    #part_len = len(bonds)
-                    #num_parts = 1
+                    #part_len = 90000
+                    #num_parts = (len(bonds) + part_len - 1) // part_len
+                    part_len = len(bonds)
+                    num_parts = 1
 
                     bonds.sort(key=cmp_to_key(compare_bonds))
 
