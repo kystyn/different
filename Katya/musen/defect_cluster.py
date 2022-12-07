@@ -22,7 +22,7 @@ def binary_search(arr, elem):
             l = cur
         else:
             return cur, arr[cur]
-    return l, arr[l]
+    return r, arr[r]
 
 
 def list_to_str(l: list) -> list[str]:
