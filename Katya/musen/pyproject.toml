@@ -1,0 +1,20 @@
+[project]
+name = "musen"
+version = "0.1.0"
+description = "Скрипты обработки дефектов и кластеризации (musen)"
+requires-python = ">=3.10"
+dependencies = [
+    "numpy",
+    "scipy",
+    "scikit-learn",
+    "matplotlib",
+    "tqdm",
+]
+
+[tool.poetry]
+package-mode = false
+
+[[tool.poetry.source]]
+name = "nexus"
+url = "http://nexus.2gis.dev/repository/pypi-group/simple"
+priority = "primary"
