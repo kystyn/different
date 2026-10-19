@@ -62,12 +62,12 @@ def load_bonds(bond_filename: str):
     has_coords = True
     with open(bond_filename, 'r') as f, open('defect_processor_log.txt', 'w') as log:
         lines = f.readlines()
-        for l in tqdm(lines, desc='Reading bond file', total=len(lines)):
+        for line_idx, l in tqdm(enumerate(lines), desc='Reading bond file', total=len(lines)):
             data = l.split(' ')
             if data[0] == '\n':
                 continue
             if data[0] != '0':
-                raise RuntimeError(f'Line {idx}: First column is expected to be zero, got {data[0]}')
+                raise RuntimeError(f'Line {line_idx}: First column is expected to be zero, got {data[0]}')
             id = int(data[1])
             begin_id = -1
             end_id = -1
@@ -104,10 +104,10 @@ def load_bonds(bond_filename: str):
                 else:
                     idx += 1
             if begin_id == -1 or end_id == -1 or death_tp == -1:
-                raise RuntimeError(f'Line {idx}: Expected begin and end particle id, death time point. Got {begin_id}, {end_id}, {death_tp}')
+                raise RuntimeError(f'Line {line_idx}: Expected begin and end particle id, death time point. Got {begin_id}, {end_id}, {death_tp}')
             if events != -1:
                 if cur_events != events:
-                    raise RuntimeError(f'Line {idx}: Different particles have different events count')
+                    raise RuntimeError(f'Line {line_idx}: Different particles have different events count')
             else:
                 events = cur_events
             has_coords = len(times) > 0
