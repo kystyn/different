@@ -145,6 +145,10 @@ def make_clusters(
                     max_cluster_center_coords = []
                     cluster_cnt = 0
                     is_large = False
+                    # Defined here so that empty time points do not leave them
+                    # unbound when the code below the loop is reached.
+                    n_clusters = 0
+                    clustered = []
 
                     for part in range(num_parts):
                         if len(bonds) == 0:
@@ -157,9 +161,12 @@ def make_clusters(
                             min_samples=pts).fit(np.asarray(part_bonds)[:, :3])
                         
                         n_clusters = len(set(clustering.labels_)) - (1 if -1 in clustering.labels_ else 0)
+                        if n_clusters == 0:
+                            # All points are noise, nothing to analyse for this part
+                            continue
                         clustered = [[] for _ in range(n_clusters)]
 
-                        for label, elem in zip(clustering.labels_, bonds):
+                        for label, elem in zip(clustering.labels_, part_bonds):
                             if label != -1:
                                 clustered[label].append(elem)
 
@@ -235,8 +242,19 @@ def make_clusters(
                                     center_y[ordered_labels[-1]],
                                     center_z[ordered_labels[-1]]
                                 ]
+                    if n_clusters == 0:
+                        # Nothing was clustered at this time point: write an
+                        # empty statistics row and move on to the next one.
+                        fig.savefig(f'{output_dir}/img_' + '{:5f}.png'.format(t) )
+                        plt.close()
+                        sf.write(sep.join(list_to_str([
+                            t, cluster_cnt, max_cluster_len,
+                            np.nan, np.nan, np.nan, np.nan, np.nan,
+                            np.nan, np.nan, max_cluster_esum, '\n'])))
+                        continue
+
                     #Histogram
-                    cluster_size = np.asarray ([clustered[label].shape[0] for label in range(n_clusters)])
+                    cluster_size = np.asarray([clustered[label].shape[0] for label in range(n_clusters)])
                     # cluster_size - массив размеров кластеров
                     #max_size = cluster_size.max
 
@@ -286,7 +304,7 @@ def make_clusters(
                             ey_pow = ea2 * np.power(ebins[pmask], eb2)
                             R2_pow_energy = r2_score(ehist[pmask], ey_pow)
                     except Exception as e:
-                        print (' energy approximation impossible : {e}')
+                        print(' energy approximation impossible : {e}')
 
                     if show:
                         if not large:

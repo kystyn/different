@@ -47,8 +47,19 @@ def load_particles(particle_filename: str):
     return particles, events
 
 
+def get_last_nonzero_energy(energies: dict) -> float:
+    # energies: {time: value}, keys are not necessarily sorted
+    if not energies:
+        return 0.0
+    sorted_times = sorted(energies.keys())
+    for t in reversed(sorted_times):
+        if energies[t] != 0.0:
+            return energies[t]
+    return energies[sorted_times[-1]]  # the whole series is zero -- return the last value (0)
+
+
 def load_bonds(bond_filename: str):
-    # key: id value: [begin_particle_id, end_particle_id, death tp, {time: (x, y, z)}, mtl]
+    # key: id value: [begin_particle_id, end_particle_id, death tp, {time: (x, y, z)}, mtl, {time: energy}]
     bonds = {}
     
     time_marker = '2'
@@ -56,6 +67,7 @@ def load_bonds(bond_filename: str):
     mtl_marker = '23'
     ttl_marker = '24'
     coord_marker = '12'
+    energy_marker = '47'
 
     events = -1
     has_all_coords = True
@@ -79,6 +91,7 @@ def load_bonds(bond_filename: str):
             z = None
             time = None
             times = {} # key: time value: (x, y, z)
+            energies = {} # key: time value: energy
             cur_events = 0
             while idx < len(data):
                 if data[idx] == ends_marker:
@@ -98,6 +111,10 @@ def load_bonds(bond_filename: str):
                     # suppose coordinates appear after time
                     times[time] = (x * 1000, y * 1000, z * 1000)
                     idx += 4
+                elif data[idx] == energy_marker:
+                    energy = float(data[idx + 1])
+                    energies[time] = energy
+                    idx += 2
                 elif data[idx] == mtl_marker:
                     mtl = data[idx + 1]
                     idx += 2
@@ -112,7 +129,7 @@ def load_bonds(bond_filename: str):
                 events = cur_events
             has_coords = len(times) > 0
             has_all_coords &= has_coords
-            bonds[id] = [begin_id, end_id, death_tp, times if has_coords else None, mtl]
+            bonds[id] = [begin_id, end_id, death_tp, times if has_coords else None, mtl, energies]
     return bonds, {'events': events, 'has_all_coords': has_all_coords}
 
 
@@ -180,10 +197,14 @@ def process_particles_bonds(particles: dict, bonds: dict, radius: float,
 
         f.write(sep.join(['BondId', 'BondX,mm', 'BondY,mm', 'BondZ,mm', 'DeathT,s',
                 'BeginParticleId', 'BeginParticleX,mm', 'BeginParticleY,mm', 'BeginParticleZ,mm',
-                'EndParticleId', 'EndParticleX,mm', 'EndParticleY,mm', 'EndParticleZ,mm']) + '\n')
+                'EndParticleId', 'EndParticleX,mm', 'EndParticleY,mm', 'EndParticleZ,mm',
+                'Energy,J']) + '\n')
 
         for id, bond in tqdm(bonds.items(), desc='Save result to file', total=len(bonds)):
             begin_id, end_id, death_tp = bond[0], bond[1], bond[2]
+            # Energies are optional: old bond files do not have them
+            energies = bond[5] if len(bond) > 5 else {}
+            energy_at_break = get_last_nonzero_energy(energies)
 
             if death_tp > time_points[-1] - 1e-5:
                 continue
@@ -198,7 +219,7 @@ def process_particles_bonds(particles: dict, bonds: dict, radius: float,
 
             middle_coord = tuple((begin_coord[i] + end_coord[i]) / 2 for i in range(3))
             
-            output = sep.join(list_to_str([id, *middle_coord, death_tp, begin_id, *begin_coord, end_id, *end_coord]))
+            output = sep.join(list_to_str([id, *middle_coord, death_tp, begin_id, *begin_coord, end_id, *end_coord, energy_at_break]))
             f.write(output + '\n')
 
 
@@ -216,10 +237,13 @@ def process_bonds(bonds: dict, radius: float, height: float, bond_length: float,
         tpf.write('\n')
 
         f.write(sep.join(['BondId', 'BondX,mm', 'BondY,mm', 'BondZ,mm', 'DeathT,s',
-                'BeginParticleId', 'EndParticleId', 'Material']) + '\n')
+                'BeginParticleId', 'EndParticleId', 'Material', 'Energy,J']) + '\n')
 
         for id, bond in tqdm(bonds.items(), desc='Save result to file', total=len(bonds)):
             begin_id, end_id, death_tp, time_to_coord, mtl = bond[0], bond[1], bond[2], bond[3], bond[4]
+            # Energies are optional: old bond files do not have them
+            energies = bond[5] if len(bond) > 5 else {}
+            energy_at_break = get_last_nonzero_energy(energies)
 
             if death_tp > time_points[-1] - 1e-5:
                 continue
@@ -227,7 +251,7 @@ def process_bonds(bonds: dict, radius: float, height: float, bond_length: float,
             tp = binary_search(time_points, death_tp)[1]
             coord = time_to_coord[tp]
             if is_particle_in_ROI(radius, height, bond_length, *coord):
-                output = sep.join(list_to_str([id, *coord, death_tp, begin_id, end_id, mtl if mtl is not None else '']))
+                output = sep.join(list_to_str([id, *coord, death_tp, begin_id, end_id, mtl if mtl is not None else '', energy_at_break]))
                 f.write(output + '\n')
 
 
